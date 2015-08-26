@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+    <!-- <link rel="stylesheet" href="css/jAlert-v2-min.css"> -->
+
+    <script src="public/vendors/js/jquery.min.js"></script>
+    <script src="public/js/bootstrap.min.js"></script>
+    <!-- <script type="text/javascript" src="public/js/cordova.js"></script> -->
+    <script src="public/js/jAlert-v2-min.js"></script>
+    <script src="public/js/mustache.js"></script>
+    <script src="public/js/helpers.js"></script>
+    <script src="public/js/recipe.js"></script>
+    <script src="public/js/recipe-preview.js"></script>
+    <script src="public/js/recipe-list.js"></script>
+    <script src="public/js/view.js"></script>
+    <script src="public/js/form-listeners.js"></script>
+    <script src="public/js/click-listeners.js"></script>
+    <script src="public/js/app.js"></script>
+    <script src="public/js/favorites.js"></script>
+    <script src="public/js/user.js"></script>
+    <script src="public/js/dashboard.js"></script>
+<!--     <link rel="stylesheet" href="css/application.css">
+    <link rel="stylesheet" href="css/home.css"> -->
+    <link href='http://fonts.googleapis.com/css?family=Abril+Fatface' rel='stylesheet' type='text/css'>
+
+    <!-- Search Results Template -->
+    <script id="search-results" type="x-tmpl-mustache">
+      <div class="list-group">
+        {{#recipePreviews}}
+        <div class="recipe-container list-group-item" data-recipeId="{{id}}" style="background-image: url({{imageUrl}})">
+          <h3 class="list-group-item-heading">{{title}}</h3>
+          <p class="left"><span class="stars">{{stars}}</span></p>
+          <p class="right">{{prepTime}}</p>
+        </div>
+        {{/recipePreviews}}
+      </div>
+    </script>
+
+    <!-- Recipe Show Template -->
+    <script id="recipe-show" type="x-tmpl-mustache">
+      <div class="back-button text-center">
+        <button type="button" class="btn btn-warning btn-xs back-search-results">Back to Search Results</button>
+      </div>
+      <div class="recipe list-group">
+        <div id="recipe-pic recipe-image" class="list-group-item" style="background-image: url({{imageUrl}})">
+          <h3 class="list-group-heading title">{{title}}</h3>
+          <p><span class="stars">{{stars}}</span></p>
+        </div>
+        <div class="row">
+          <div class="col-xs-4 text-center" id="serving">{{yieldNumber}} {{yieldUnit}}</div>
+          <div class="col-xs-4" id="favorite-icon"><a class="nav-icon" href="#"><span data-title="{{ title }}" data-big-oven-id="{{ id }}" data-user-id="{{userId}}" class="glyphicon glyphicon-heart"></span></a></div>
+          <div class="col-xs-4 text-center" id="prep-time">{{prepTime}} Minutes</div>
+        </div>
+      </div>
+      <button class="btn btn-success" type="button" id="cook-button">Start Cooking</button>
+    </script>
+
+    <!-- Ingredients Template -->
+    <script id="ingredients-template" type="x-tmpl-mustache">
+      <div class="panel panel-default">
+        <div class="panel-heading">Ingredients</div>
+          <div class="panel-body">
+            <ul id="ingredients">
+              {{#ingredients}}
+              <li>{{quantity}} {{unit}} {{name}}</li>
+              {{/ingredients}}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </script>
+
+    <!-- Instructions Template -->
+    <script id="instructions-template" type="x-tmpl-mustache">
+      <ol class="list-group" id="instructions">
+        {{#instructions}}
+        <li class="list-group-item">{{content}}</li>
+        {{/instructions}}
+      </ol>
+    </script>
+
+    <!-- Recipe Back Button Template -->
+    <script id="recipe-back-template" type="x-tmpl-mustache">
+      <div class="back-button text-center">
+        <button type="button" class="btn btn-warning btn-xs back-recipe">Back to Recipe</button>
+      </div>
+    </script>
+
+    <!-- Backup Buttons Template -->
+    <script id="backup-buttons-template" type="x-tmpl-mustache">
+      <div class="text-center">
+        <button type="button" class="btn btn-default backup-repeat" aria-label="Repeat">
+          <span class="glyphicon glyphicon-step-backward"></span>
+        </button>
+        <button type="button" class="btn btn-default backup-start" aria-label="Start">
+          <span class="glyphicon glyphicon-play"></span>
+        </button>
+        <button type="button" class="btn btn-default backup-off" aria-label="Off">
+          <span class="glyphicon glyphicon-stop"></span>
+        </button>
+        <button type="button" class="btn btn-default backup-next" aria-label="Next">
+          <span class="glyphicon glyphicon-step-forward"></span>
+        </button>
+      </div>
+    </script>
+
+    <!-- Home Splash Page Logged Out-->
+    <script id="home-page-logged-out" type="x-tmpl-mustache">
+      <nav class="navbar navbar-default splash-navbar">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed splash-login" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="glyphicon glyphicon-lock"></span>
+            </button>
+          </div>
+          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <form class="navbar-form navbar-right signin-form well">
+              <div class="form-group">
+                <input type="text" name="user[name]" class="form-control" placeholder="name">
+              </div>
+              <div class="form-group">
+                <input type="password" name="user[password]" class="form-control" placeholder="password">
+              </div>
+              <div>
+                <button type="submit" class="btn btn-success">Sign in</button>
+                <a class="signup-link pull-right" href="#">Not a user? Sign Up</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </nav>
+      <div class="well">
+        <div class="splash-title-container text-center bottom-aligned-text">
+          <img id="chefs-hat" src="https://cdn3.iconfinder.com/data/icons/kitchen-icons-2/64/Chefs_Hat-128.png"></img><span class="abril-font splash-title"> Line Cook </span><img id="chefs-hat" src="https://cdn3.iconfinder.com/data/icons/kitchen-icons-2/64/Chefs_Hat-128.png"></img>
+        </div>
+        <form class="navbar-form" id="search-form" role="search">
+          <div class="input-group">
+            <input id="search" type="text" class="form-control" placeholder="Find Recipe...">
+            <span class="input-group-btn">
+              <button class="btn btn-info" type="submit">
+                <span class="glyphicon glyphicon-search"></span>
+              </button>
+            </span>
+          </div>
+        </form>
+      </div>
+      <div class="content-container">
+        <iframe src="img/chopping200new.gif" width="200" height="208" frameBorder="0" class="center-block chopping-gif"></iframe>
+      </div>
+    </script>
+
+    <!-- Home Splash Page Logged In-->
+    <script id="home-page-logged-in" type="x-tmpl-mustache">
+      <nav class="navbar navbar-default splash-navbar">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed splash-login pull-right" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="glyphicon glyphicon-lock"></span>
+            </button>
+          </div>
+          <div class="collapse navbar-collapse well" id="bs-example-navbar-collapse-1">
+            <a class="signout-link" href="#">Signout</a>
+          </div>
+        </div>
+      </nav>
+      <div class="well">
+        <div class="splash-title-container text-center bottom-aligned-text">
+          <img id="chefs-hat" src="https://cdn3.iconfinder.com/data/icons/kitchen-icons-2/64/Chefs_Hat-128.png"></img><span class="abril-font splash-title"> Line Cook </span><img id="chefs-hat" src="https://cdn3.iconfinder.com/data/icons/kitchen-icons-2/64/Chefs_Hat-128.png"></img>
+        </div>
+        <form class="navbar-form" id="search-form" role="search">
+          <div class="input-group">
+            <input id="search" type="text" class="form-control" placeholder="Find Recipe...">
+            <span class="input-group-btn">
+              <button class="btn btn-info" type="submit">
+                <span class="glyphicon glyphicon-search"></span>
+              </button>
+            </span>
+          </div>
+        </form>
+      </div>
+      <div class="content-container">
+        <iframe src="img/chopping200new.gif" width="200" height="208" frameBorder="0" class="center-block chopping-gif"></iframe>
+      </div>
+    </script>
+
+    <!-- Logged In Template -->
+    <script id="logged-in" type="x-tmpl-mustache">
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="glyphicon glyphicon-lock"></span>
+            </button>
+            <ul class="nav-icons nav nav-pills">
+              <li><a class="nav-brand navbar-brand" href="#">Line Cook</a></li>
+              <li class="home-glyph"><a class="nav-icon" href="#"><span class="glyphicon glyphicon-home"></span></a></li>
+              <li id="user-icon"><a class="nav-icon" href="#"><span class="glyphicon glyphicon-user"></span></a></li>
+            </ul>
+          </div>
+          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+              <li><a class="signout-link" href="#">Signout</a></li>
+            </ul>
+          </div>
+          <form class="navbar-form" id="search-form" role="search">
+            <div class="row">
+              <div class="form-group col-xs-10">
+                <input id="search" type="text" class="form-control" placeholder="Search">
+              </div>
+              <button type="submit" class="btn btn-info">
+                <span class="glyphicon glyphicon-search"></span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </nav>
+      <div class="content-container">
+      </div>
+    </script>
+
+    <!-- Logged Out Template -->
+    <script id="logged-out" type="x-tmpl-mustache">
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="glyphicon glyphicon-lock"></span>
+            </button>
+            <ul class="nav-icons nav nav-pills">
+              <li><a class="nav-brand navbar-brand" href="#">Line Cook</a></li>
+              <li class="home-glyph"><a class="nav-icon" href="#"><span class="glyphicon glyphicon-home"></span></a></li>
+            </ul>
+          </div>
+          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <form class="navbar-form navbar-right signin-form">
+              <div class="form-group">
+                <input type="text" name="user[name]" class="form-control" placeholder="name">
+              </div>
+              <div class="form-group">
+                <input type="password" name="user[password]" class="form-control" placeholder="password">
+              </div>
+              <div>
+                <button type="submit" class="btn btn-success">Sign in</button>
+                <a class="signup-link pull-right" href="#">Not a user? Sign Up</a>
+              </div>
+            </form>
+          </div>
+          <form class="navbar-form" id="search-form" role="search">
+            <div class="row">
+              <div class="form-group col-xs-10">
+                <input id="search" type="text" class="form-control" placeholder="Search">
+              </div>
+              <button type="submit" class="btn btn-info">
+                <span class="glyphicon glyphicon-search"></span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </nav>
+      <div class="content-container">
+      </div>
+    </script>
+
+    <!-- Sign Up Template -->
+    <script id="sign-up-template" type="x-tmpl-mustache">
+      <div id="signup-container">
+        <form class="signup-form auth-form well">
+          <h2 class="text-center">Sign Up</h2>
+          <div class="form-group">
+            <input type="text" name="user[name]" class="form-control" placeholder="name">
+          </div>
+          <div class="form-group">
+            <input type="password" name="user[password]" class="form-control" placeholder="password">
+          </div>
+          <div class="form-group">
+            <input type="password" name="user[password_confirmation]" class="form-control" placeholder="password confirmation">
+          </div>
+          <button type="submit" class="btn btn-success">Sign Up</button>
+        </form>
+      </div>
+    </script>
+
+    <!-- User Dashboard Template -->
+    <script id="user-dashboard-template" type="x-tmpl-mustache">
+      <div id="dashboard-container" class="list-group">
+        <h3 id="user-name" class="list-group-heading">{{ name }}&#39s Favorites</h3>
+        {{ #favorites }}
+          <li class="list-group-item recipe-container" data-recipeId="{{bigOvenId}}">{{ title }}<span id="dash-fav-icon"class="glyphicon glyphicon-heart"></span>
+          </li>
+        {{ /favorites }}
+      </div>
+    </script>
+
+  </head>
+
+  <body>
+    <div class="container">
+    </div>
+  </body>
+</html>
